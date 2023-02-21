@@ -8,19 +8,20 @@
 -Une méthode permettant à un joueur d'attaquer : une attaque peut faire perdre aléatoirement entre 1 et 50 points à un adversaire. Si l'adversaire n'a plus de points, son total ne peut être négatif, il vaudra simplement zéro. Un joueur dispose de 3 tours, chaque attaque augmente le nombre de tours consommés. */
 /**Définissez, pour chaque joueur, une méthode lui permettant d'effectuer une "super attaque". Une super attaque est une attaque faisant perdre 10 points de plus.
 -Modifiez la méthode attaque() afin qu'elle accepte un second paramètre "bonus". Le bonus sera cumulé à la valeur initiale de l'attaque. */
-class Partie {
-	constructor(joueurs, tour, joueurVainqueur) {
-		this.joueurs = joueurs;
-		this.tour = tour;
-		this.joueurVainqueur = null;
-	}
-}
 
 class Joueur {
-	constructor(lastName, firstName, points, tour) {
+	/**
+	 *
+	 * @param {string} lastName
+	 * @param {string} firstName
+	 * @param {number} points
+	 * @param {number} tour
+	 */
+	//nbPoints & tour Pas en parama car défini au départ
+	constructor(lastName, firstName) {
 		this.lastName = lastName;
 		this.firstName = firstName;
-		this.points = 100;
+		this.nbPoints = 100;
 		this.tour = 0;
 	}
 	rand(nb) {
@@ -28,31 +29,82 @@ class Joueur {
 	}
 
 	attaque(adversaire, bonus = 0) {
+		//Une attaque fait perdre entre 1 et 50 pts au hasard
 		if (this.tour < 3) {
-			adversaire.points -= this.rand(51) + bonus;
-			if (adversaire.points < 0) {
-				adversaire.points = 0;
+			//on ajoute le bonus
+			const pointToLoose = this.rand(50) + bonus;
+			const pointsBeforeAttack = adversaire.nbPoints;
+			const pointsAfterAttack = pointsBeforeAttack - pointToLoose;
+
+			if (pointsAfterAttack < 0) {
+				adversaire.nbPoints = 0;
+			} else {
+				adversaire.nbPoints = pointsAfterAttack;
 			}
-			adversaire.affichePoints();
-			++this.tour;
+			//Affiche pts adversaire
+			adversaire.displayNbPoints();
 		}
+		//Après l'attaque on incrémente le tour
+		this.tour++;
+
+		/* //OU
+		if (this.tour < 3) {
+			adversaire.nbPoints -= this.rand(51) + bonus;
+			if (adversaire.nbPoints < 0) {
+				adversaire.nbPoints = 0;
+			}
+			adversaire.displayNbPoints();
+			++this.tour;
+		} */
 	}
-	entite() {
-		return `${this.nom} ${this.prenom}`;
+	//A la place du prototype
+	superAttaque(adversaire) {
+		this.attaque(adversaire, 10);
 	}
-	affichePoints() {
-		console.log(`${this.identite()} possède ${this.points} points`);
+
+	getIdentite() {
+		let phrase = `${this.firstName} ${this.lastName}`;
+		return phrase;
+	}
+	displayNbPoints() {
+		let phrase = `${this.getIdentite()} possède ${this.nbPoints} points`;
+		console.log(phrase);
 	}
 }
-
-Joueur.prototype.superAttaque = function (adversaire) {
+/* //OU
+ Joueur.prototype.superAttaque = function (adversaire) {
 	this.attaque(adversaire, 10);
-};
+}; */
+
+class Partie {
+	/**
+	 *
+	 * @param {Object[]} joueurs
+	 * @param {number} tour
+	 */
+	constructor(joueurs, tour) {
+		this.joueurs = joueurs;
+		this.tour = tour;
+		//joueurVainqueur Pas en parama car null au départ
+		this.joueurVainqueur = null;
+	}
+
+	vaiqueur() {
+		//Par défaut le meilleur joueur est
+		let bestPerso = this.joueurs[0];
+		this.joueurs.forEach((perso) => {
+			if (perso.displayNbPoints > bestPerso.displayNbPoints) {
+				bestPerso = perso;
+			}
+		});
+		console.log(`Le vaiqueur est: ${bestPerso.getIdentite()}`);
+	}
+}
 
 const perso1 = new Joueur('DOE', 'John', 100, 0);
 const perso2 = new Joueur('HALL', 'Berry', 100, 0);
 const perso3 = new Joueur('JOHANSSON', 'Scarlett', 100, 0);
 
-const partie = new Partie(3, [perso1, perso2, perso3]);
+const partie = new Partie([perso1, perso2, perso3], 3);
 
-console.log(perso1);
+console.log(partie);
